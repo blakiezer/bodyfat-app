@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Body Fat Calculator</title>
+    <style>
+        body { font-family: Arial; padding: 20px; }
+        .form-group { margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>Body Fat Calculator 💪</h1>
+    
+    <select id="method">
+        <option value="bmi">BMI Method</option>
+        <option value="navy">Navy Method</option>
+    </select>
+
+    <!-- BMI Form -->
+    <div id="bmi-form">
+        <div class="form-group">
+            <label>Weight (kg):</label>
+            <input type="number" id="weight" step="0.1">
+        </div>
+        <div class="form-group">
+            <label>Height (m):</label>
+            <input type="number" id="height" step="0.01">
+        </div>
+        <div class="form-group">
+            <label>Age:</label>
+            <input type="number" id="age">
+        </div>
+        <div class="form-group">
+            <label>Gender:</label>
+            <select id="gender">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Navy Form (hidden by default) -->
+    <div id="navy-form" style="display: none;">
+        <div class="form-group">
+            <label>Waist (cm):</label>
+            <input type="number" id="waist">
+        </div>
+        <div class="form-group">
+            <label>Neck (cm):</label>
+            <input type="number" id="neck">
+        </div>
+    </div>
+
+    <button onclick="calculate()">Calculate</button>
+    <h2 id="result"></h2>
+
+    <script>
+        // Toggle forms based on method
+        document.getElementById("method").addEventListener("change", (e) => {
+            document.getElementById("bmi-form").style.display = e.target.value === "bmi" ? "block" : "none";
+            document.getElementById("navy-form").style.display = e.target.value === "navy" ? "block" : "none";
+        });
+
+        async function calculate() {
+            const method = document.getElementById("method").value;
+            let data = {};
+
+            if (method === "bmi") {
+                data = {
+                    weight: parseFloat(document.getElementById("weight").value),
+                    height: parseFloat(document.getElementById("height").value),
+                    age: parseInt(document.getElementById("age").value),
+                    gender: document.getElementById("gender").value
+                };
+            } else {
+                data = {
+                    waist: parseFloat(document.getElementById("waist").value),
+                    neck: parseFloat(document.getElementById("neck").value),
+                    height: parseFloat(document.getElementById("height").value),
+                    gender: document.getElementById("gender").value
+                };
+            }
+
+            const endpoint = method === "bmi" ? "predict-bmi" : "predict-navy";
+            const response = await fetch(`/.netlify/functions/${endpoint}`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            document.getElementById("result").innerHTML = `Body Fat: ${result.bodyFat}% 🎉`;
+        }
+    </script>
+</body>
+</html>
